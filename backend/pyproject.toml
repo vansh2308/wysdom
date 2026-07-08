@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "wysdom-backend"
+version = "0.1.0"
+description = "Backend architecture for the Wysdom engineering intelligence platform"
+authors = ["Vanshu <vanshu@example.com>"]
+packages = [{ include = "app" }]
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.13"
+fastapi = "^0.115.0"
+uvicorn = { version = "^0.32.0", extras = ["standard"] }
+pydantic = "^2.9.0"
+pydantic-settings = "^2.4.0"
+sqlalchemy = { version = "^2.0.4", extras = ["asyncio"] }
+asyncpg = "^0.29.0"
+redis = "^5.0.0"
+langgraph = "^0.2.0"
+pinecone-client = "^3.0.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.0"
+
+[build-system]
+requires = ["poetry-core>=1.9.0"]
+build-backend = "poetry.core.masonry.api"
