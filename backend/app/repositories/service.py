@@ -35,10 +35,6 @@ class RepositoryChunkService:
             ".go": "go",
             ".rb": "ruby",
             ".cs": "csharp",
-            # WIP: Add support for C, C++, H++ 
-            ".c": "c",
-            ".cpp": "cpp",
-            ".hpp": "hpp"
         }
 
     def chunk_repository(self, repo_input: str, include_tests: bool = True) -> list[CodeChunk]:

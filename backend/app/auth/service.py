@@ -1,17 +1,20 @@
 import os
 from datetime import datetime, timedelta, timezone
 from typing import Any
+from dotenv import load_dotenv
 
 import jwt
 from fastapi import HTTPException, Request, status
 
+load_dotenv()
+
 JWT_ALGORITHM = "HS256"
-JWT_SECRET = os.getenv("JWT_SECRET", "dev-secret-change-me")
+JWT_SECRET = os.getenv("JWT_SECRET")
 JWT_EXPIRES_MINUTES = int(os.getenv("JWT_EXPIRES_MINUTES", "60"))
 
 class AuthTokenService:
     @staticmethod
-    def create_token(user_id: str) -> str:
+    def create_token(user_id: str) -> str:        
         now = datetime.now(timezone.utc)
         payload = {
             "sub": user_id,
