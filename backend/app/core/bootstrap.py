@@ -4,12 +4,12 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-# from backend.app.auth.api.auth import router as auth_router
 from app.auth.api import router as auth_router
 from app.api.health import router as health_router
 from app.core.config import Settings, get_settings
 from app.core.logging import configure_logging
 from app.infrastructure.database.session import get_engine, dispose_engine
+from app.repositories.api import router as repositories_router
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -50,4 +50,5 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     app.include_router(health_router)
     app.include_router(auth_router)
+    app.include_router(repositories_router)
     return app
