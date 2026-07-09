@@ -24,8 +24,6 @@ class Settings(BaseSettings):
 
     db_url: PostgresDsn = Field(
         ...,
-        # env="DATABASE_URL",
-        # validation_alias="DATABASE_URL",
         alias="DATABASE_URL",
         description=(
             "Neon Postgres async DSN, e.g. "
