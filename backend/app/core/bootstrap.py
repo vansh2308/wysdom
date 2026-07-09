@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.health import router as health_router
 from app.core.config import Settings, get_settings
 from app.core.logging import configure_logging
+from app.infrastructure.database.session import get_engine, dispose_engine
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -17,8 +18,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     async def lifespan(app: FastAPI):
         logger = logging.getLogger("wysdom.bootstrap")
         logger.info("Application startup complete for %s", resolved_settings.app_name)
+
         try:
+            get_engine()
             yield
+            await dispose_engine() 
         finally:
             logger.info("Application shutdown complete for %s", resolved_settings.app_name)
 
