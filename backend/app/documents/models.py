@@ -19,7 +19,7 @@ class ExtractionOptions:
     output_format: ExtractionOutputFormat = ExtractionOutputFormat.CHUNKS
     use_llm: bool = False
     force_ocr: bool = False
-    extract_images: bool = True
+    extract_images: bool = False
     page_range: str | None = None  # e.g. "0,5-10,20"
 
 

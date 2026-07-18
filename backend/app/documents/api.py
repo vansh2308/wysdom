@@ -20,10 +20,10 @@ router = APIRouter(prefix="/documents", tags=["documents"])
 async def extract_pdf(
     service: PdfExtraction,
     file: UploadFile,
-    output_format: ExtractionOutputFormat = Form(default=ExtractionOutputFormat.JSON),
+    output_format: ExtractionOutputFormat = Form(default=ExtractionOutputFormat.CHUNKS),
     use_llm: bool = Form(default=False),
     force_ocr: bool = Form(default=False),
-    extract_images: bool = Form(default=True),
+    extract_images: bool = Form(default=False),
     page_range: str | None = Form(default=None),
 ) -> PdfExtractionResponse:
     options = ExtractionOptions(

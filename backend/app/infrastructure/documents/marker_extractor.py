@@ -74,7 +74,7 @@ class MarkerPdfExtractor:
         return converter(str(file_path))
 
     # --- map marker's rendered pydantic model -> our domain model ---
-
+    
     @staticmethod
     def _to_domain_result(
         source_filename: str, options: ExtractionOptions, rendered: Any
