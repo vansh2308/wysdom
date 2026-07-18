@@ -10,6 +10,8 @@ from app.core.config import Settings, get_settings
 from app.core.logging import configure_logging
 from app.infrastructure.database.session import get_engine, dispose_engine
 from app.repositories.api import router as repositories_router
+from app.documents.api import router as documents_router
+from app.infrastructure.documents.model_registry import get_artifact_dict
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -20,13 +22,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     async def lifespan(app: FastAPI):
         logger = logging.getLogger("wysdom.bootstrap")
         logger.info("Application startup complete for %s", resolved_settings.app_name)
-
+        
         try:
             get_engine()
+            if resolved_settings.PDF_EXTRACTION_EAGER_LOAD_MODELS:
+                get_artifact_dict()
             yield
             await dispose_engine() 
         finally:
             logger.info("Application shutdown complete for %s", resolved_settings.app_name)
+
+
 
     app = FastAPI(
         title=resolved_settings.app_name,
@@ -51,4 +57,5 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(health_router)
     app.include_router(auth_router)
     app.include_router(repositories_router)
+    app.include_router(documents_router)
     return app

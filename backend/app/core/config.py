@@ -1,4 +1,5 @@
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic import Field, PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -22,6 +23,7 @@ class Settings(BaseSettings):
     pinecone_api_key: str | None = Field(default=None, alias="PINECONE_API_KEY")
     langgraph_enabled: bool = Field(default=False, alias="LANGGRAPH_ENABLED")
 
+    # --- Postgres DB  ---
     db_url: PostgresDsn = Field(
         ...,
         alias="DATABASE_URL",
@@ -35,6 +37,18 @@ class Settings(BaseSettings):
     db_pool_timeout: int = Field(default=30, alias="DB_POOL_TIMEOUT")
     db_pool_recycle: int = Field(default=300, alias="DB_POOL_RECYCLE")
     db_echo: bool = Field(default=False, alias="DB_ECHO")
+
+
+
+    # --- PDF extraction (marker) ---
+    PDF_EXTRACTION_DEVICE: str | None = None  # sets TORCH_DEVICE, e.g. "cuda", "cpu"
+    PDF_EXTRACTION_WORKERS: int = 1           # thread pool size
+    PDF_EXTRACTION_MAX_CONCURRENCY: int = 1   # concurrent conversions allowed
+    PDF_EXTRACTION_TEMP_DIR: Path = Path("/tmp/pdf_extraction")
+    PDF_EXTRACTION_MAX_FILE_SIZE_MB: int = 50
+    PDF_EXTRACTION_EAGER_LOAD_MODELS: bool = True
+    PDF_EXTRACTION_LLM_SERVICE: str | None = None  # e.g. "marker.services.gemini.GoogleGeminiService"
+
 
     @property
     def is_development(self) -> bool:
