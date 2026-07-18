@@ -4,7 +4,7 @@ import tempfile
 from pathlib import Path
 
 from tree_sitter import Node
-from tree_sitter_languages import get_language, get_parser
+from tree_sitter_language_pack import get_language, get_parser
 
 from app.repositories.models import CodeChunk
 
@@ -101,7 +101,6 @@ class RepositoryChunkService:
         except Exception:
             return []
 
-        parser.set_language(language)
         source = file_path.read_text(encoding="utf-8", errors="ignore")
         tree = parser.parse(source.encode("utf-8"))
         root = tree.root_node
@@ -198,7 +197,6 @@ class RepositoryChunkService:
         except Exception:
             return []
 
-        parser.set_language(language)
         source = file_path.read_text(encoding="utf-8", errors="ignore")
         tree = parser.parse(source.encode("utf-8"))
         contexts: list[ChunkContext] = []
