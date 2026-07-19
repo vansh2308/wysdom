@@ -15,3 +15,8 @@ class CodeChunk(BaseModel):
     superclasses: list[str] = Field(default_factory=list)
     related_comments: list[str] = Field(default_factory=list)
     where_used: list[str] = Field(default_factory=list)
+
+
+class ChunkRepositoryRequest(BaseModel):
+    repo_url: str
+    include_tests: bool = True

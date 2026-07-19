@@ -6,7 +6,7 @@ from pathlib import Path
 from tree_sitter import Node
 from tree_sitter_language_pack import get_language, get_parser
 
-from app.repositories.models import CodeChunk
+from app.repositories.schemas import CodeChunk
 
 ChunkContext = tuple[str, str, int, int, str | None, str | None]
 

@@ -1,16 +1,13 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from app.repositories.models import CodeChunk
+from app.repositories.schemas import CodeChunk, ChunkRepositoryRequest
 from app.repositories.service import RepositoryChunkService
 
 router = APIRouter(prefix="/repositories", tags=["repositories"])
 service = RepositoryChunkService()
 
 
-class ChunkRepositoryRequest(BaseModel):
-    repo_url: str
-    include_tests: bool = True
 
 
 @router.post("/chunk", response_model=list[CodeChunk])
