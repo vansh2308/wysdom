@@ -7,7 +7,8 @@ from fastapi import APIRouter, Form, HTTPException, UploadFile, status
 
 from app.api.dependencies import PdfExtraction
 
-from app.documents.models import PdfExtractionResponse, ExtractionOptions, ExtractionOutputFormat
+from app.documents.models import ExtractionOptions, ExtractionOutputFormat
+from app.documents.schemas import PdfExtractionResponse
 from app.documents.pdf_extraction_service import FileTooLargeError, UnsupportedFileError
 from app.infrastructure.documents.marker_extractor import MarkerExtractionError
 
