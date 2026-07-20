@@ -15,7 +15,12 @@ class OpenAiEmbeddingClient:
             return []
         settings = get_settings()
         client = get_openai_client()
-        response = await client.embeddings.create(model=settings.EMBEDDING_MODEL, input=texts)
+        response = await client.embeddings.create(
+            model=settings.EMBEDDING_MODEL,
+            input=texts,
+            # dimension=settings.EMBEDDING_DIMENSION
+            encoding_format="float"
+        )
         return [item.embedding for item in response.data]
 
     async def embed_query(self, query: str) -> list[float]:
