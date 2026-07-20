@@ -50,6 +50,34 @@ class Settings(BaseSettings):
     PDF_EXTRACTION_LLM_SERVICE: str | None = None  # e.g. "marker.services.gemini.GoogleGeminiService"
 
 
+    # --- RETRIEVAL ENGINE ---
+    PINECONE_API_KEY: str
+    PINECONE_INDEX_HOST: str
+    PINECONE_NAMESPACE: str = "default"
+
+    OPENAI_API_KEY: str
+    EMBEDDING_MODEL: str = "text-embedding-3-small"
+    EMBEDDING_DIMENSION: int = 512
+
+    ANTHROPIC_API_KEY: str
+    QUERY_PLANNER_MODEL: str = "google/gemma-4-26b-a4b-it:free"
+    
+    
+    CONTEXT_COMPRESSOR_MODEL: str = "claude-sonnet-5"
+
+
+    RERANKER_MODEL_NAME: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+    RERANKER_WORKERS: int = 1
+
+    RRF_K: int = 60
+    RETRIEVAL_DENSE_TOP_K: int = 30
+    RETRIEVAL_KEYWORD_TOP_K: int = 30
+    RETRIEVAL_RERANK_TOP_N: int = 40
+    RETRIEVAL_FINAL_TOP_K: int = 10
+
+    BM25_INDEX_PERSIST_PATH: Path = Path("/tmp/bm25_index.pkl")
+
+
     @property
     def is_development(self) -> bool:
         return self.environment.lower() == "development"
