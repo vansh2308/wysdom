@@ -22,7 +22,6 @@ class FileTooLargeError(ValueError):
     pass
 
 
-# WIP: Exclude Page Footer 
 class PdfExtractionService:
     """
     Orchestration only: validate → stage to disk → delegate to the domain

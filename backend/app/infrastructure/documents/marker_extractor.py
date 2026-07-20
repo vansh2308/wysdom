@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from pathlib import Path
-from typing import Any
+from typing import Any, List
 
 from app.core.config import get_settings
 from app.documents.models import ExtractionOptions, ExtractionOutputFormat, ExtractionResult
@@ -23,6 +23,11 @@ class MarkerPdfExtractor:
     (model weights, thread pool, semaphore) lives in module-level
     lru_cache singletons in model_registry.
     """
+
+    
+    blackListedBlockTypes: List[str]  = [
+        "PageFooter"
+    ]
 
     async def extract(
         self, file_path: Path, options: ExtractionOptions
@@ -81,10 +86,6 @@ class MarkerPdfExtractor:
     ) -> ExtractionResult:
         from marker.output import text_from_rendered
 
-        logger = logging.getLogger(__name__)
-        logger.info(rendered)
-
-
         payload = rendered.model_dump(mode="json")
         metadata_raw: dict[str, Any] = payload.get("metadata", {}) or {}
 
@@ -98,6 +99,8 @@ class MarkerPdfExtractor:
             content = payload  # tree (json), flat list (chunks), or html string
 
         page_stats = metadata_raw.get("page_stats", []) or []
+
+        content.blocks = [block for block in content.blocks if block.block_type not in MarkerPdfExtractor.blackListedBlockTypes]
 
         return ExtractionResult(
             source_filename=source_filename,
