@@ -100,7 +100,25 @@ class MarkerPdfExtractor:
 
         page_stats = metadata_raw.get("page_stats", []) or []
 
-        content.blocks = [block for block in content.blocks if block.block_type not in MarkerPdfExtractor.blackListedBlockTypes]
+        def getPageNoFromId(id: str):
+            result: int = -1
+            try:
+                result = int(id.split("/")[2])
+            except Exception as e:
+                logger.info(id)
+            finally:
+                return result
+
+        content['blocks'] = [{
+            "chunk_id": block.get("id"),
+            "block_type": block.get("block_type"),
+            "text": block.get("html"),
+            "metadata": {
+                "page": getPageNoFromId(block.get("id")),
+                # "bbox": block.get("bbox"),
+                # "section_hierarchy": block.get('section_hierarchy')
+            }
+        } for block in content.get("blocks", []) if block.get('block_type') not in MarkerPdfExtractor.blackListedBlockTypes]
 
         return ExtractionResult(
             source_filename=source_filename,
