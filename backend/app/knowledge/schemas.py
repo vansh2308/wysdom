@@ -16,7 +16,7 @@ class ChunkInput(BaseModel):
 
 
 class DocumentIngestChunksRequest(BaseModel):
-    parent_id: str = Field(..., description="document_id or repository_id these chunks belong to")
+    source_id: str = Field(..., description="document_id or repository_id these chunks belong to")
     chunks: list[ChunkInput]
     metadata: dict[str, Any] = Field(default_factory=dict, description="Shared metadata merged into every chunk")
 
@@ -25,7 +25,7 @@ class RepositoryIngestChunksRequest(BaseModel):
     chunks: List[CodeChunk]
 
 class IngestionResponse(BaseModel):
-    parent_id: str
+    source_id: str
     source_type: SourceType
     ingested_count: int
 
@@ -43,7 +43,7 @@ class RetrievedChunkResponse(BaseModel):
     chunk_id: str
     text: str
     source_type: SourceType
-    parent_id: str
+    source_id: str
     score: float
     metadata: dict[str, Any]
 

@@ -15,7 +15,7 @@ class Chunk:
     chunk_id: str
     text: str
     source_type: SourceType
-    parent_id: str  # document_id or repository_id
+    source_id: str  # document_id or repository_id
     metadata: dict[str, Any] = field(default_factory=dict)
 
 

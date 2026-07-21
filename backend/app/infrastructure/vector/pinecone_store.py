@@ -39,7 +39,7 @@ class PineconeVectorStore:
                 "metadata": {
                     "text": chunk.text,
                     "source_type": chunk.source_type.value,
-                    "parent_id": chunk.parent_id,
+                    "source_id": chunk.source_id,
                     **chunk.metadata,
                 },
             }
@@ -68,14 +68,14 @@ class PineconeVectorStore:
             metadata = dict(match.metadata or {})
             text = metadata.pop("text", "")
             source_type = SourceType(metadata.pop("source_type", SourceType.DOCUMENT.value))
-            parent_id = metadata.pop("parent_id", "")
+            source_id = metadata.pop("source_id", "")
             results.append(
                 ScoredChunk(
                     chunk=Chunk(
                         chunk_id=match.id,
                         text=text,
                         source_type=source_type,
-                        parent_id=parent_id,
+                        source_id=source_id,
                         metadata=metadata,
                     ),
                     score=float(match.score),
