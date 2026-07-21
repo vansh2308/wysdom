@@ -1,11 +1,12 @@
 # app/api/schemas/retrieval.py
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, List
 
 from pydantic import BaseModel, Field
 
 from app.knowledge.models import SourceType
+from app.repositories.schemas import CodeChunk
 
 
 class ChunkInput(BaseModel):
@@ -14,11 +15,14 @@ class ChunkInput(BaseModel):
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 
-class IngestChunksRequest(BaseModel):
+class DocumentIngestChunksRequest(BaseModel):
     parent_id: str = Field(..., description="document_id or repository_id these chunks belong to")
     chunks: list[ChunkInput]
     metadata: dict[str, Any] = Field(default_factory=dict, description="Shared metadata merged into every chunk")
 
+
+class RepositoryIngestChunksRequest(BaseModel): 
+    chunks: List[CodeChunk]
 
 class IngestionResponse(BaseModel):
     parent_id: str

@@ -2,12 +2,12 @@
 from __future__ import annotations
 
 import uuid
-
+from typing import Tuple
 
 from app.knowledge.models import Chunk, SourceType
 from app.knowledge.ports import EmbeddingPort, KeywordIndexPort, VectorStorePort
 
-
+# WIP: change parent_id to repository_id
 class IngestionService:
     """Shared path for document and repository chunks: embed -> upsert dense
     vectors -> add to keyword index. Both writes happen every time so BM25
@@ -19,8 +19,8 @@ class IngestionService:
         self._keyword_index = keyword_index
 
     async def ingest(
-        self, parent_id: str, source_type: SourceType, raw_chunks: list[dict], shared_metadata: dict
-    ) -> int:
+        self, parent_id: str, source_type: SourceType, raw_chunks: list[dict], shared_metadata: dict = {}
+    ) -> Tuple[str, int]:
         chunks = [
             Chunk(
                 chunk_id=raw.get("chunk_id") or f"{parent_id}_{uuid.uuid4().hex[:8]}",
@@ -38,4 +38,4 @@ class IngestionService:
         vectors = await self._embedder.embed_texts([c.text for c in chunks])
         await self._vector_store.upsert(chunks, vectors)
         await self._keyword_index.add_documents(chunks)
-        return len(chunks)
+        return (parent_id, len(chunks))
