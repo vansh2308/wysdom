@@ -49,9 +49,9 @@ class RetrievedChunkResponse(BaseModel):
 
 
 class QueryPlanResponse(BaseModel):
-    source_types: list[SourceType]
+    # source_types: list[SourceType]
     pinecone_filter: dict[str, Any]
-    reasoning: str
+    # reasoning: str
 
 
 class QueryResponse(BaseModel):

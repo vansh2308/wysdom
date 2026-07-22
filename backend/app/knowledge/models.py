@@ -21,9 +21,9 @@ class Chunk:
 
 @dataclass(frozen=True, slots=True)
 class QueryPlan:
-    source_types: tuple[SourceType, ...]
+    # source_types: tuple[SourceType, ...]
     pinecone_filter: dict[str, Any]
-    reasoning: str
+    # reasoning: str
 
 
 @dataclass(frozen=True, slots=True)
