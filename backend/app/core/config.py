@@ -61,9 +61,9 @@ class Settings(BaseSettings):
 
     ANTHROPIC_API_KEY: str
     QUERY_PLANNER_MODEL: str = "google/gemma-4-26b-a4b-it:free"
+    # CONTEXT_COMPRESSOR_MODEL: str = "claude-sonnet-5"
+    CONTEXT_COMPRESSOR_MODEL: str = "google/gemma-4-26b-a4b-it:free"
     
-    
-    CONTEXT_COMPRESSOR_MODEL: str = "claude-sonnet-5"
 
 
     RERANKER_MODEL_NAME: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
