@@ -18,6 +18,7 @@ from app.infrastructure.vector.pinecone_store import PineconeVectorStore
 from app.knowledge.embedding_client import OpenAiEmbeddingClient
 from app.agents.query_planner import LlmQueryPlanner
 from app.knowledge.reranker import CrossEncoderReranker
+from app.agents.orchestration_service import AgentOrchestrationService
 
 
 
@@ -80,3 +81,9 @@ Ingestion = Annotated[IngestionService, Depends(get_ingestion_service)]
 Retrieval = Annotated[RetrievalService, Depends(get_retrieval_service)]
 PdfExtraction = Annotated[PdfExtractionService, Depends(get_pdf_extraction_service)]
 DbSession = Annotated[AsyncSession, Depends(get_db_session)]
+
+
+def get_agent_orchestration_service() -> AgentOrchestrationService:
+    return AgentOrchestrationService()
+
+AgentOrchestration = Annotated[AgentOrchestrationService, Depends(get_agent_orchestration_service)]

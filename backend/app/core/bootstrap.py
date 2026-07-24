@@ -12,6 +12,7 @@ from app.infrastructure.database.session import get_engine, dispose_engine
 from app.repositories.api import router as repositories_router
 from app.documents.api import router as documents_router
 from app.knowledge.api import router as knowledge_router
+from app.agents.api import router as agents_router
 from app.infrastructure.documents.model_registry import get_artifact_dict
 from app.infrastructure.vector.bm25_index import Bm25KeywordIndex
 
@@ -62,4 +63,5 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(repositories_router)
     app.include_router(documents_router)
     app.include_router(knowledge_router)
+    app.include_router(agents_router)
     return app
