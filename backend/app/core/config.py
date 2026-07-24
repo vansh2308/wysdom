@@ -63,6 +63,13 @@ class Settings(BaseSettings):
     QUERY_PLANNER_MODEL: str = "google/gemma-4-26b-a4b-it:free"
     # CONTEXT_COMPRESSOR_MODEL: str = "claude-sonnet-5"
     CONTEXT_COMPRESSOR_MODEL: str = "google/gemma-4-26b-a4b-it:free"
+
+
+    AGENT_PLANNER_MODEL: str = "google/gemma-4-26b-a4b-it:free"
+    AGENT_CRITIC_MODEL: str = "google/gemma-4-26b-a4b-it:free"
+    AGENT_SYNTHESIZER_MODEL: str = "google/gemma-4-26b-a4b-it:free"
+    AGENT_MAX_RETRIEVAL_LOOPS: int = 2
+    AGENT_RECURSION_LIMIT: int = 25
     
 
 
