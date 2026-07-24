@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 # WIP: Just get source_types array instead of pinecone filter 
 # WIP: Ig we dont need an LLM here, look for a simpler model 
+# Priority: Low 
 _SYSTEM_PROMPT = """You are a retrieval query planner for a hybrid search engine over two corpora: "document" chunks (from PDFs/papers) and "repository" chunks (parsed source code). Given a user's query, determine which source types are relevant ("document", "repository", or both).Respond with ONLY a valid Pinecone metadata filter JSON object (raw text, no markdown block, no other text). The JSON must use the following format:{"source_type": {"$in": ["document", "repository"]}}"""
 
 

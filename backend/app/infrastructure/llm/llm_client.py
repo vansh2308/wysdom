@@ -10,7 +10,6 @@ from app.core.config import get_settings
 from openai import AsyncOpenAI
 
 
-# WIP: Use openAi client for QueryPlanner & ContextCompressor 
 @lru_cache
 def get_anthropic_client() -> AsyncAnthropic:
     return AsyncAnthropic(api_key=get_settings().ANTHROPIC_API_KEY)
