@@ -42,7 +42,7 @@ class CriticVerdict(BaseModel):
 
 
 class ExplainabilityReport(BaseModel):
-    summary: str
+    detailed_response: str
     reasoning_summary: str  # mandatory "how we got here" per your Explainability contract
     supporting_evidence: list[str]
     confidence: Literal["low", "medium", "high"]

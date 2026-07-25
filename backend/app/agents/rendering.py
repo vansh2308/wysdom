@@ -11,8 +11,8 @@ def render_markdown_report(state: MultiAgentState, report: ExplainabilityReport)
     sections = [
         f"# {state.user_request}",
         "",
-        "## Summary",
-        report.summary,
+        "## Detailed Response",
+        report.detailed_response,
         "",
         "## Reasoning Summary",
         report.reasoning_summary,

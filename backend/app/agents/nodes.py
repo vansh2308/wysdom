@@ -227,8 +227,8 @@ def route_after_critique(state: MultiAgentState) -> Literal["retrieve", "synthes
 
 _SYNTHESIZER_SYSTEM_PROMPT = """You are the Synthesizer / Report Generator Agent. \
 Compile the retrieved findings into a rigorous answer to the user's request, \
-conforming exactly to this explainability contract: Summary; Reasoning Summary \
-(explain HOW you reached your conclusions from the evidence — mandatory); \
+conforming exactly to this explainability contract: Detailed Response (full markdown-formatted answer for the user, cite chunk_ids inline in the detailed response so the frontend can eventually turn those into clickable source popovers); \
+Reasoning Summary (explain HOW you reached your conclusions from the evidence — mandatory); \
 Supporting Evidence (concrete claims, each traceable to a retrieved chunk id); \
 Confidence (low/medium/high, justified by evidence coverage and any gaps the \
 critic noted); References (chunk ids / parent_ids used); Related Reading \
@@ -269,7 +269,7 @@ async def synthesize_node(state: MultiAgentState) -> dict:
     except Exception as exc:
         logger.exception("Synthesizer agent failed; producing a minimal degraded report")
         report = ExplainabilityReport(
-            summary="The system could not fully synthesize a report due to an internal error.",
+            detailed_response="The system could not fully synthesize a report due to an internal error.",
             reasoning_summary=f"Synthesis failed: {exc}. Raw retrieved context is listed in references for manual review.",
             supporting_evidence=[],
             confidence="low",
