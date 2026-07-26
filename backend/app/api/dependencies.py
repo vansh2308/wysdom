@@ -19,6 +19,10 @@ from app.knowledge.embedding_client import OpenAiEmbeddingClient
 from app.agents.query_planner import LlmQueryPlanner
 from app.knowledge.reranker import CrossEncoderReranker
 from app.agents.orchestration_service import AgentOrchestrationService
+from app.conversations.ports import ConversationNamerPort
+from app.conversations.namer import LlmConversationNamer
+from app.conversations.conversation_service import ConversationService
+from app.infrastructure.repository.conversations import SqlAlchemyConversationRepository
 
 
 
@@ -32,6 +36,7 @@ async def get_db_session() -> AsyncIterator[AsyncSession]:
     async with session_factory() as session:
         try:
             yield session
+            await session.commit()
         except Exception:
             await session.rollback()
             raise
@@ -87,3 +92,17 @@ def get_agent_orchestration_service() -> AgentOrchestrationService:
     return AgentOrchestrationService()
 
 AgentOrchestration = Annotated[AgentOrchestrationService, Depends(get_agent_orchestration_service)]
+
+
+def get_conversation_namer() -> ConversationNamerPort:
+    return LlmConversationNamer()
+
+
+def get_conversation_service(session: DbSession) -> ConversationService:
+    repo = SqlAlchemyConversationRepository(session)
+    return ConversationService(
+        conversations=repo, messages=repo, namer=get_conversation_namer(), vector_store=PineconeVectorStore()
+    )
+
+
+ConversationDep = Annotated[ConversationService, Depends(get_conversation_service)]
