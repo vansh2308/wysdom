@@ -237,7 +237,6 @@ genuinely supports more than one reading — leave empty otherwise).
 \n\nCRITICAL: Return ONLY raw JSON matching the required schema. Never wrap output in markdown fences, backticks, or '```json'.
 """
 
-# WIP: Add detailed assistance response 
 async def synthesize_node(state: MultiAgentState) -> dict:
     client = get_openai_client()
     settings = get_settings()

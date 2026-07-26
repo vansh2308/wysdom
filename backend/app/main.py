@@ -5,11 +5,7 @@ from app.core.config import get_settings
 
 app = create_app()
 
-
-# WIP: for each conversation/project create a separate vector index namespace 
-# & query only with that namespace 
 # WIP: Add conversation context (prev msgs) to retrieval 
-# WIP: Upsert to postgres 
 
 if __name__ == "__main__":
     settings = get_settings()
