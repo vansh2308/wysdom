@@ -32,6 +32,7 @@ class Settings(BaseSettings):
             "postgresql+asyncpg://user:pass@ep-xxx-pooler.region.aws.neon.tech/dbname?ssl=true"
         ),
     )
+    MIGRATIONS_DATABASE_URL: PostgresDsn = Field(..., description="Neon *direct* (non-pooler) endpoint, used only for Alembic")
     db_pool_size: int = Field(default=5, alias="DB_POOL_SIZE")
     db_max_overflow: int = Field(default=10, alias="DB_MAX_OVERFLOW")
     db_pool_timeout: int = Field(default=30, alias="DB_POOL_TIMEOUT")
@@ -63,6 +64,7 @@ class Settings(BaseSettings):
     QUERY_PLANNER_MODEL: str = "google/gemma-4-26b-a4b-it:free"
     # CONTEXT_COMPRESSOR_MODEL: str = "claude-sonnet-5"
     CONTEXT_COMPRESSOR_MODEL: str = "google/gemma-4-26b-a4b-it:free"
+    CONVERSATION_NAMER_MODEL: str = "google/gemma-4-26b-a4b-it:free"
 
 
     AGENT_PLANNER_MODEL: str = "google/gemma-4-26b-a4b-it:free"
