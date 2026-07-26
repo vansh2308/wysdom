@@ -11,10 +11,11 @@ class EmbeddingPort(Protocol):
 
 
 class VectorStorePort(Protocol):
-    async def upsert(self, chunks: list[Chunk], vectors: list[list[float]]) -> None: ...
+    async def upsert(self, chunks: list[Chunk], vectors: list[list[float]], namespace: str) -> None: ...
     async def query(
-        self, vector: list[float], top_k: int, metadata_filter: dict[str, Any] | None
+        self, vector: list[float], top_k: int, metadata_filter: dict[str, Any] | None, namespace: str
     ) -> list[ScoredChunk]: ...
+    async def delete_namespace(self, namespace: str) -> None: ...
 
 
 class KeywordIndexPort(Protocol):

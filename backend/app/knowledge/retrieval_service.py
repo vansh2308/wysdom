@@ -33,6 +33,7 @@ class RetrievalService:
     async def retrieve(
         self,
         query: str,
+        namespace: str,
         user_source_types: tuple[SourceType, ...] | None,
         user_filter: dict | None,
         final_top_k: int | None = None,
@@ -46,7 +47,7 @@ class RetrievalService:
         query_vector = await self._embedder.embed_query(query)
 
         dense_results, keyword_results = await asyncio.gather(
-            self._vector_store.query(query_vector, settings.RETRIEVAL_DENSE_TOP_K, pinecone_filter),
+            self._vector_store.query(query_vector, settings.RETRIEVAL_DENSE_TOP_K, pinecone_filter, namespace=namespace),
             self._keyword_index.search(query, settings.RETRIEVAL_KEYWORD_TOP_K, source_types, plan.pinecone_filter),
         )
 

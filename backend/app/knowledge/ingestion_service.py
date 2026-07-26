@@ -18,7 +18,7 @@ class IngestionService:
         self._keyword_index = keyword_index
 
     async def ingest(
-        self, source_id: str, source_type: SourceType, raw_chunks: list[dict], shared_metadata: dict = {}
+        self, source_id: str, namespace: str, source_type: SourceType, raw_chunks: list[dict], shared_metadata: dict = {}
     ) -> Tuple[str, int]:
         chunks = [
             Chunk(

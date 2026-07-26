@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from functools import lru_cache
 from typing import Any
 
@@ -15,6 +16,8 @@ def get_pinecone_client() -> Pinecone:
     return Pinecone(api_key=settings.PINECONE_API_KEY)
 
 
+logger = logging.getLogger(__name__)
+
 class PineconeVectorStore:
     """
     VectorStorePort adapter. The control-plane client is a cached singleton;
@@ -27,7 +30,7 @@ class PineconeVectorStore:
     this is the only file that needs to change.
     """
 
-    async def upsert(self, chunks: list[Chunk], vectors: list[list[float]]) -> None:
+    async def upsert(self, chunks: list[Chunk], vectors: list[list[float]], namespace: str) -> None:
         if not chunks:
             return
         settings = get_settings()
@@ -47,10 +50,10 @@ class PineconeVectorStore:
         ]
         async with client.IndexAsyncio(host=settings.PINECONE_INDEX_HOST) as index:
             for i in range(0, len(records), 100):  # upsert batch limit
-                await index.upsert(vectors=records[i : i + 100], namespace=settings.PINECONE_NAMESPACE)
+                await index.upsert(vectors=records[i : i + 100], namespace=namespace)
 
     async def query(
-        self, vector: list[float], top_k: int, metadata_filter: dict[str, Any] | None
+        self, vector: list[float], top_k: int, metadata_filter: dict[str, Any] | None, namespace: str
     ) -> list[ScoredChunk]:
         settings = get_settings()
         client = get_pinecone_client()
@@ -58,7 +61,7 @@ class PineconeVectorStore:
             response = await index.query(
                 vector=vector,
                 top_k=top_k,
-                namespace=settings.PINECONE_NAMESPACE,
+                namespace=namespace,
                 filter=metadata_filter or None,
                 include_metadata=True,
             )
@@ -82,3 +85,22 @@ class PineconeVectorStore:
                 )
             )
         return results
+
+    async def delete_namespace(self, namespace: str) -> None:
+        client = get_pinecone_client()
+        settings = get_settings()
+
+        try:
+            async with client.IndexAsyncio(host=settings.PINECONE_INDEX_HOST) as index:
+                await index.delete(delete_all=True, namespace=namespace)
+                logger.info(f"Successfully deleted Pinecone namespace: {namespace}")
+        except Exception as e:
+            if hasattr(e, 'status') and e.status == 404:
+                logger.info(f"Namespace '{namespace}' does not exist. Skipping deletion.")
+            elif "not found" in str(e).lower():
+                logger.info(f"Namespace '{namespace}' not found. Skipping deletion.")
+            else:
+                # Re-raise if it is a genuine connection or authentication issue
+                logger.error(f"Failed to delete namespace {namespace}: {e}")
+                raise e
+            
