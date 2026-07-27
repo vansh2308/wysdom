@@ -19,11 +19,14 @@ class AgentOrchestrationService:
     invokes/streams it, and guarantees the caller always gets a
     MultiAgentState back rather than a raw graph exception."""
 
-    async def run(self, user_request: str) -> MultiAgentState:
+    async def run(self, user_request: str, namespace: str) -> MultiAgentState:
         graph = get_agent_graph()
         settings = get_settings()
         initial_state = MultiAgentState(
-            request_id=uuid.uuid4().hex, user_request=user_request, max_retrieval_loops=settings.AGENT_MAX_RETRIEVAL_LOOPS
+            request_id=uuid.uuid4().hex,
+            user_request=user_request,
+            max_retrieval_loops=settings.AGENT_MAX_RETRIEVAL_LOOPS,
+            namespace=namespace
         )
 
         try:

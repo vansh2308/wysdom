@@ -87,11 +87,12 @@ def _ready_steps(plan: ExecutionPlan, done_ids: set[str]) -> list[PlanStep]:
     return [s for s in plan.steps if s.step_id not in done_ids and set(s.depends_on) <= done_ids]
 
 
-async def _run_step(service: RetrievalService, step: PlanStep) -> RetrievedStepResult:
+async def _run_step(service: RetrievalService, step: PlanStep, namespace: str) -> RetrievedStepResult:
     result = await service.retrieve(
         query=step.retrieval_query,
         user_source_types=tuple(step.source_types) if step.source_types else None,
         user_filter=None,
+        namespace=namespace
     )
     return RetrievedStepResult(
         step_id=step.step_id,
@@ -127,7 +128,7 @@ async def retrieve_node(state: MultiAgentState) -> dict:
             break
 
         outcomes = await asyncio.gather(
-            *(_run_step(retrieval_service, step) for step in ready), return_exceptions=True
+            *(_run_step(retrieval_service, step, namespace=state.namespace) for step in ready), return_exceptions=True
         )
 
         for step, outcome in zip(ready, outcomes, strict=True):

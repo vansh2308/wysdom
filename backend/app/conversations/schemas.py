@@ -6,6 +6,7 @@ from uuid import UUID
 from pydantic import BaseModel, Field, ConfigDict
 
 from app.conversations.models import ConversationStatus, MessageRole
+from app.agents.schemas import AgentRunResponse
 
 
 class CreateConversationRequest(BaseModel):
@@ -38,6 +39,7 @@ class MessageResponse(BaseModel):
     role: MessageRole
     content: str
     created_at: datetime
+    agent_response: AgentRunResponse
 
 
 class CleanupDraftsResponse(BaseModel):

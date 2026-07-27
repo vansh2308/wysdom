@@ -3,17 +3,20 @@ from __future__ import annotations
 import logging
 from datetime import timedelta
 from uuid import UUID
+from dataclasses import asdict
 
 from fastapi import APIRouter, HTTPException, Query, status, Response
 
-from app.api.dependencies import ConversationDep
+from app.api.dependencies import ConversationDep, AgentOrchestration
 from app.conversations.schemas import CleanupDraftsResponse, ConversationResponse, CreateConversationRequest, CreateMessageRequest, MessageResponse
 from app.conversations.exceptions import ConversationNotFoundError, NamespaceDeletionError
+from app.agents.schemas import AgentRunResponse
+
+from app.conversations.models import Message
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/conversations", tags=["conversations"])
-
 
 # NOTE: this must be registered before "/{conversation_id}" routes below —
 # otherwise "maintenance" would be matched (and fail UUID parsing) as a
@@ -58,23 +61,33 @@ async def get_conversation(conversation_id: UUID, service: ConversationDep) -> C
     return ConversationResponse.model_validate(conversation)
 
 
-# WIP: Wire agent orchestratioon, pass namespace 
 @router.post(
     "/{conversation_id}/messages",
     response_model=MessageResponse,
     status_code=status.HTTP_201_CREATED,
 )
 async def add_message(
-    conversation_id: UUID, request: CreateMessageRequest, service: ConversationDep
+    conversation_id: UUID, 
+    request: CreateMessageRequest,
+    conversationService: ConversationDep,
+    agentService: AgentOrchestration
 ) -> MessageResponse:
     try:
-        message, _conversation = await service.add_message(
+        message, _conversation = await conversationService.add_message(
             conversation_id=conversation_id, role=request.role, content=request.content
         )
+
+        state = await agentService.run(user_request=request.content, namespace=_conversation.namespace_id)
+
+        agent_response = AgentRunResponse(**state.model_dump())
+
     except ConversationNotFoundError as exc:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
-    # return MessageResponse(**message.__dict__)
-    return MessageResponse.model_validate(message)
+    
+    return MessageResponse(
+        **asdict(message),
+        agent_response=agent_response
+    )
 
 
 @router.get("/{conversation_id}/messages", response_model=list[MessageResponse])

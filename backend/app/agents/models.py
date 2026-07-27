@@ -73,6 +73,7 @@ class MultiAgentState(BaseModel):
     request_id: str
     user_request: str
     plan: ExecutionPlan | None = None
+    namespace: str
     step_results: dict[str, RetrievedStepResult] = Field(default_factory=dict)
     critic_history: list[CriticVerdict] = Field(default_factory=list)
     retrieval_loop_count: int = 0
