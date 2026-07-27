@@ -23,6 +23,7 @@ from app.conversations.ports import ConversationNamerPort
 from app.conversations.namer import LlmConversationNamer
 from app.conversations.conversation_service import ConversationService
 from app.infrastructure.repository.conversations import SqlAlchemyConversationRepository
+from app.repositories.service import RepositoryChunkService
 
 
 
@@ -52,6 +53,13 @@ def get_pdf_extraction_service(
     extractor: Annotated[PdfExtractorPort, Depends(get_pdf_extractor)],
 ) -> PdfExtractionService:
     return PdfExtractionService(extractor)
+
+PdfExtraction = Annotated[PdfExtractionService, Depends(get_pdf_extraction_service)]
+
+def get_repo_chunk_service() -> RepositoryChunkService:
+    return RepositoryChunkService()
+
+RepositoryChunker = Annotated[RepositoryChunkService, Depends(get_repo_chunk_service)]
 
 
 def get_embedder() -> EmbeddingPort: return OpenAiEmbeddingClient()
@@ -84,7 +92,6 @@ def get_retrieval_service(
 # Convenience alias for route signatures
 Ingestion = Annotated[IngestionService, Depends(get_ingestion_service)]
 Retrieval = Annotated[RetrievalService, Depends(get_retrieval_service)]
-PdfExtraction = Annotated[PdfExtractionService, Depends(get_pdf_extraction_service)]
 DbSession = Annotated[AsyncSession, Depends(get_db_session)]
 
 

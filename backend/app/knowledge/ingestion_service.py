@@ -35,6 +35,6 @@ class IngestionService:
             return 0
 
         vectors = await self._embedder.embed_texts([c.text for c in chunks])
-        await self._vector_store.upsert(chunks, vectors)
+        await self._vector_store.upsert(chunks, vectors, namespace=namespace)
         await self._keyword_index.add_documents(chunks)
         return (source_id, len(chunks))

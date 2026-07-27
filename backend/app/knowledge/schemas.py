@@ -1,13 +1,13 @@
 # app/api/schemas/retrieval.py
 from __future__ import annotations
 
-from typing import Any, List
+from typing import Any, List, Optional
 
 from pydantic import BaseModel, Field
 
 from app.knowledge.models import SourceType
 from app.repositories.schemas import CodeChunk
-
+from app.documents.models import ExtractionOutputFormat
 
 class ChunkInput(BaseModel):
     chunk_id: str | None = None
@@ -15,14 +15,41 @@ class ChunkInput(BaseModel):
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 
-class DocumentIngestChunksRequest(BaseModel):
-    source_id: str = Field(..., description="document_id or repository_id these chunks belong to")
-    chunks: list[ChunkInput]
-    metadata: dict[str, Any] = Field(default_factory=dict, description="Shared metadata merged into every chunk")
+# class DocumentIngestChunksRequest(BaseModel):
+#     source_id: str = Field(..., description="document_id or repository_id these chunks belong to")
+#     chunks: list[ChunkInput]
+#     metadata: dict[str, Any] = Field(default_factory=dict, description="Shared metadata merged into every chunk")
 
+
+class DocumentIngestChunksRequest(BaseModel):
+    output_format: ExtractionOutputFormat = Field(
+        default=ExtractionOutputFormat.CHUNKS,
+        description="The desired format for the extracted output."
+    )
+    use_llm: bool = Field(
+        default=False, 
+        description="Whether to use an LLM for processing."
+    )
+    force_ocr: bool = Field(
+        default=False, 
+        description="Force optical character recognition on the document."
+    )
+    extract_images: bool = Field(
+        default=False, 
+        description="Enable extraction of images from the file."
+    )
+    page_range: Optional[str] = Field(
+        default=None, 
+        description="Specific page range to process, e.g., '1-5'."
+    )
+
+
+# class RepositoryIngestChunksRequest(BaseModel): 
+#     chunks: List[CodeChunk]
 
 class RepositoryIngestChunksRequest(BaseModel): 
-    chunks: List[CodeChunk]
+    repo_url: str
+    include_tests: bool = True
 
 class IngestionResponse(BaseModel):
     source_id: str

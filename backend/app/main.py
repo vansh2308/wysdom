@@ -5,7 +5,12 @@ from app.core.config import get_settings
 
 app = create_app()
 
-# WIP: Add conversation context (prev msgs) to retrieval 
+
+# TODO: Migrate from openRouter to OpenAi
+# TODO: Add conversation context 
+# TODO: Add websearch, arxiv tool
+# TODO: Add OAuth
+# TODO: Add repo/pdf graph builder 
 
 if __name__ == "__main__":
     settings = get_settings()

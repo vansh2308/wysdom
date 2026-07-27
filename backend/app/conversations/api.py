@@ -58,6 +58,7 @@ async def get_conversation(conversation_id: UUID, service: ConversationDep) -> C
     return ConversationResponse.model_validate(conversation)
 
 
+# WIP: Wire agent orchestratioon, pass namespace 
 @router.post(
     "/{conversation_id}/messages",
     response_model=MessageResponse,
