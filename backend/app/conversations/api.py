@@ -7,7 +7,7 @@ from dataclasses import asdict
 
 from fastapi import APIRouter, HTTPException, Query, status, Response
 
-from app.api.dependencies import ConversationDep, AgentOrchestration
+from app.api.dependencies import ConversationDep, AgentOrchestration, AgentRunRepositoryDep
 from app.conversations.schemas import CleanupDraftsResponse, ConversationResponse, CreateConversationRequest, CreateMessageRequest, MessageResponse
 from app.conversations.exceptions import ConversationNotFoundError, NamespaceDeletionError
 from app.agents.schemas import AgentRunResponse
@@ -68,6 +68,7 @@ async def add_message(
     conversation_id: UUID, 
     request: CreateMessageRequest,
     conversationService: ConversationDep,
+    agentRunRepoService: AgentRunRepositoryDep,
     agentService: AgentOrchestration
 ) -> MessageResponse:
     try:
@@ -75,7 +76,16 @@ async def add_message(
             conversation_id=conversation_id, role=request.role, content=request.content
         )
 
+        run = await agentRunRepoService.create(conversation_id, message.id, message.content)
         state = await agentService.run(user_request=request.content, namespace=_conversation.namespace_id, thread_id=uuid4().hex)
+
+        await agentRunRepoService.complete(
+            run.id, status=state.status,  
+            plan=state.plan.model_dump() if state.plan else None,
+            critic_history=[c.model_dump() for c in state.critic_history],
+            retrieval_loop_count=state.retrieval_loop_count, errors=state.errors,
+            report=state.report.model_dump() if state.report else None, markdown_report=state.markdown_report,
+        )
 
         agent_response = AgentRunResponse(**state.model_dump())
 

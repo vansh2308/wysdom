@@ -4,7 +4,7 @@ import asyncio
 import logging
 from pathlib import Path
 from typing import Any, List
-
+from uuid import uuid4
 from app.core.config import get_settings
 from app.documents.models import ExtractionOptions, ExtractionOutputFormat, ExtractionResult
 from app.infrastructure.documents.model_registry import get_artifact_dict, get_extraction_executor, get_extraction_semaphore
@@ -110,7 +110,8 @@ class MarkerPdfExtractor:
                 return result
 
         content['blocks'] = [{
-            "chunk_id": block.get("id"),
+            # "chunk_id": block.get("id"),
+            "chunk_id": uuid4().hex,
             "block_type": block.get("block_type"),
             "text": block.get("html"),
             "metadata": {

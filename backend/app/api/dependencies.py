@@ -179,6 +179,7 @@ def get_chunk_repository(session: DbSession) -> ChunkRepositoryPort:
     return SqlAlchemyChunkRepository(session)
 
 
+AgentRunRepositoryDep = Annotated[AgentRunRepositoryPort, Depends(get_agent_run_repository)]
 ChunkRepositoryDep = Annotated[ChunkRepositoryPort, Depends(get_chunk_repository)]
 DocumentArtifactDep = Annotated[DocumentArtifactRepositoryPort, Depends(get_document_artifact_repository)]
 RepositoryArtifactDep = Annotated[RepositoryArtifactRepositoryPort, Depends(get_repository_artifact_repository)]
