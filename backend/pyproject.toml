@@ -9,7 +9,7 @@ packages = [{ include = "app" }]
 python = ">=3.11,<3.13"
 fastapi = "^0.115.0"
 uvicorn = { version = "^0.32.0", extras = ["standard"] }
-pydantic = "^2.9.0"
+pydantic = {extras = ["email"], version = "^2.13.4"}
 pydantic-settings = "^2.4.0"
 sqlalchemy = {extras = ["asyncio"], version = "^2.0.51"}
 asyncpg = "^0.29.0"
@@ -30,6 +30,8 @@ sentence-transformers = "^5.6.0"
 mistral = "^22.0.0"
 mistralai = "^2.7.0"
 alembic = "^1.18.5"
+langgraph-checkpoint-postgres = "^2.0.0"
+psycopg = {extras = ["binary", "pool"], version = "^3.3.4"}
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.0"

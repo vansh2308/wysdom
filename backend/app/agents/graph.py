@@ -10,6 +10,7 @@ from openai import APIConnectionError, APITimeoutError, InternalServerError, Rat
 
 from app.agents.models import MultiAgentState
 from app.agents.nodes import critique_node, plan_node, retrieve_node, route_after_critique, synthesize_node
+from app.agents.checkpointer import get_checkpointer
 
 
 # Retries only kick in for transient failures — parsing/validation errors
@@ -21,8 +22,8 @@ _LLM_RETRY = RetryPolicy(
     retry_on=(APIConnectionError, APITimeoutError, RateLimitError, InternalServerError),
 )
 
+_compiled_graph = None 
 
-@lru_cache
 def get_agent_graph():
     """
     Compiled once per process — the compiled graph is stateless/reusable
@@ -35,17 +36,20 @@ def get_agent_graph():
     check langgraph.types.RetryPolicy for your installed version if this
     doesn't type-check.
     """
-    builder = StateGraph(MultiAgentState)
+    global _compiled_graph
+    if _compiled_graph is None:
+        builder = StateGraph(MultiAgentState)
 
-    builder.add_node("make_plan", plan_node, retry=_LLM_RETRY)
-    builder.add_node("retrieve", retrieve_node)  # failures handled internally, not node-level retried
-    builder.add_node("critique", critique_node, retry=_LLM_RETRY)
-    builder.add_node("synthesize", synthesize_node, retry=_LLM_RETRY)
+        builder.add_node("make_plan", plan_node, retry=_LLM_RETRY)
+        builder.add_node("retrieve", retrieve_node)  # failures handled internally, not node-level retried
+        builder.add_node("critique", critique_node, retry=_LLM_RETRY)
+        builder.add_node("synthesize", synthesize_node, retry=_LLM_RETRY)
 
-    builder.add_edge(START, "make_plan")
-    builder.add_edge("make_plan", "retrieve")
-    builder.add_edge("retrieve", "critique")
-    builder.add_conditional_edges("critique", route_after_critique, {"retrieve": "retrieve", "synthesize": "synthesize"})
-    builder.add_edge("synthesize", END)
+        builder.add_edge(START, "make_plan")
+        builder.add_edge("make_plan", "retrieve")
+        builder.add_edge("retrieve", "critique")
+        builder.add_conditional_edges("critique", route_after_critique, {"retrieve": "retrieve", "synthesize": "synthesize"})
+        builder.add_edge("synthesize", END)
 
-    return builder.compile()
+        _compiled_graph = builder.compile(checkpointer=get_checkpointer())
+    return _compiled_graph

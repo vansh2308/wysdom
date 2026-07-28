@@ -12,13 +12,13 @@ from app.agents.schemas import AgentRunResponse
 class CreateConversationRequest(BaseModel):
     # No auth system yet, so owner_id is client-supplied. Once auth exists,
     # this should come from a verified session dependency, not the body.
-    owner_id: str = Field(..., min_length=1, max_length=255)
+    owner_id: UUID
 
 
 class ConversationResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: UUID
-    owner_id: str
+    owner_id: UUID
     namespace_id: str
     name: str | None
     status: ConversationStatus

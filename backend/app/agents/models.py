@@ -1,9 +1,11 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from enum import Enum
+from datetime import datetime
 from typing import Any, Literal
-
+from uuid import UUID
 from pydantic import BaseModel, Field
 
 from app.knowledge.models import SourceType
@@ -82,3 +84,21 @@ class MultiAgentState(BaseModel):
     errors: list[str] = Field(default_factory=list)
     report: ExplainabilityReport | None = None
     markdown_report: str | None = None
+
+
+
+@dataclass(frozen=True, slots=True)
+class AgentRun:
+    id: UUID
+    conversation_id: UUID
+    message_id: UUID | None
+    request_text: str
+    status: AgentStatus
+    plan: dict[str, Any] | None
+    critic_history: list[dict[str, Any]] = field(default_factory=list)
+    retrieval_loop_count: int = 0
+    errors: list[str] = field(default_factory=list)
+    report: dict[str, Any] | None = None
+    markdown_report: str | None = None
+    started_at: datetime = field(default_factory=datetime.utcnow)
+    completed_at: datetime | None = None

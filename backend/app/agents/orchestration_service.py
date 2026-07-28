@@ -19,7 +19,7 @@ class AgentOrchestrationService:
     invokes/streams it, and guarantees the caller always gets a
     MultiAgentState back rather than a raw graph exception."""
 
-    async def run(self, user_request: str, namespace: str) -> MultiAgentState:
+    async def run(self, user_request: str, namespace: str, thread_id: str) -> MultiAgentState:
         graph = get_agent_graph()
         settings = get_settings()
         initial_state = MultiAgentState(
@@ -30,7 +30,11 @@ class AgentOrchestrationService:
         )
 
         try:
-            result = await graph.ainvoke(initial_state.model_dump(), config={"recursion_limit": settings.AGENT_RECURSION_LIMIT})
+            result = await graph.ainvoke(
+                initial_state.model_dump(), 
+                config={"configurable": {"thread_id": thread_id}, "recursion_limit": settings.AGENT_RECURSION_LIMIT}
+                # config={"recursion_limit": settings.AGENT_RECURSION_LIMIT}
+            )
         except GraphRecursionError:
             logger.exception("Agent graph exceeded recursion limit for request %s", initial_state.request_id)
             return initial_state.model_copy(
@@ -42,7 +46,7 @@ class AgentOrchestrationService:
 
         return MultiAgentState.model_validate(result)
 
-    async def stream(self, user_request: str) -> AsyncIterator[dict[str, Any]]:
+    async def stream(self, user_request: str, namespace: str, thread_id: str) -> AsyncIterator[dict[str, Any]]:
         """Yields {"node": name, "update": {...}} per completed node — maps
         to the platform's Streaming requirement (current step/agent/progress)."""
         graph = get_agent_graph()
@@ -53,7 +57,9 @@ class AgentOrchestrationService:
 
         try:
             async for event in graph.astream(
-                initial_state.model_dump(), config={"recursion_limit": settings.AGENT_RECURSION_LIMIT}, stream_mode="updates"
+                initial_state.model_dump(), 
+                config={"configurable": {"thread_id": thread_id}, "recursion_limit": settings.AGENT_RECURSION_LIMIT}, 
+                stream_mode="updates"
             ):
                 for node_name, update in event.items():
                     yield {"node": node_name, "update": update}

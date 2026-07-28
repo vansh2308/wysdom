@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from datetime import timedelta
-from uuid import UUID
+from uuid import UUID, uuid4
 from dataclasses import asdict
 
 from fastapi import APIRouter, HTTPException, Query, status, Response
@@ -11,8 +11,6 @@ from app.api.dependencies import ConversationDep, AgentOrchestration
 from app.conversations.schemas import CleanupDraftsResponse, ConversationResponse, CreateConversationRequest, CreateMessageRequest, MessageResponse
 from app.conversations.exceptions import ConversationNotFoundError, NamespaceDeletionError
 from app.agents.schemas import AgentRunResponse
-
-from app.conversations.models import Message
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +75,7 @@ async def add_message(
             conversation_id=conversation_id, role=request.role, content=request.content
         )
 
-        state = await agentService.run(user_request=request.content, namespace=_conversation.namespace_id)
+        state = await agentService.run(user_request=request.content, namespace=_conversation.namespace_id, thread_id=uuid4().hex)
 
         agent_response = AgentRunResponse(**state.model_dump())
 
@@ -98,6 +96,7 @@ async def list_messages(conversation_id: UUID, service: ConversationDep) -> list
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     # return [MessageResponse(**m.__dict__) for m in messages]
     return [MessageResponse.model_validate(m) for m in messages]
+
 
 
 @router.delete("/{conversation_id}", status_code=status.HTTP_204_NO_CONTENT)

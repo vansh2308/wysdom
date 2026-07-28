@@ -16,7 +16,7 @@ from app.agents.api import router as agents_router
 from app.conversations.api import router as conversations_router
 from app.infrastructure.documents.model_registry import get_artifact_dict
 from app.infrastructure.vector.bm25_index import Bm25KeywordIndex
-
+from app.agents.checkpointer import init_checkpointer, close_checkpointer
 
 def create_app(settings: Settings | None = None) -> FastAPI:
     resolved_settings = settings or get_settings()
@@ -31,8 +31,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             get_engine()
             if resolved_settings.PDF_EXTRACTION_EAGER_LOAD_MODELS:
                 get_artifact_dict()
+            await init_checkpointer()
             Bm25KeywordIndex.load_from_disk()
             yield
+            await close_checkpointer()
             await dispose_engine() 
         finally:
             logger.info("Application shutdown complete for %s", resolved_settings.app_name)

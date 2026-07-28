@@ -6,13 +6,14 @@ from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, status, UploadFile, Depends
 
-from app.api.dependencies import Ingestion, Retrieval, ConversationDep, PdfExtraction, RepositoryChunker
+from app.api.dependencies import Ingestion, Retrieval, ConversationDep, PdfExtraction, RepositoryChunker, IngestionJobDep, DocumentArtifactDep, RepositoryArtifactDep
 from app.knowledge.schemas import DocumentIngestChunksRequest, RepositoryIngestChunksRequest, IngestionResponse, QueryPlanResponse, QueryRequest, QueryResponse, RetrievedChunkResponse
 from app.documents.pdf_extraction_service import FileTooLargeError, UnsupportedFileError
 from app.infrastructure.documents.marker_extractor import MarkerExtractionError
 from app.knowledge.models import SourceType
 from app.conversations.exceptions import ConversationNotFoundError
 from app.documents.models import ExtractionOptions
+from app.knowledge.models import IngestionJobStatus, ArtifactStatus
 
 
 # router = APIRouter(prefix="/retrieval", tags=["retrieval"])
@@ -35,6 +36,8 @@ async def ingest_pdf_chunks(
         file: UploadFile,
         ingestionService: Ingestion,
         conversations: ConversationDep,
+        documents: DocumentArtifactDep,
+        jobs: IngestionJobDep,
         request: DocumentIngestChunksRequest = Depends()
     ) -> IngestionResponse:
     conversation = await _get_conversation_or_404(conversations, conversation_id)
@@ -56,14 +59,27 @@ async def ingest_pdf_chunks(
         raise HTTPException(
             status.HTTP_502_BAD_GATEWAY, detail="PDF extraction failed."
         ) from exc
-    
-    source_id, count = await ingestionService.ingest(
-        source_id=file.filename or f"{uuid.uuid4().hex}",
-        source_type=SourceType.DOCUMENT,
-        raw_chunks=[c for c in result.content.get('blocks', [])],
-        shared_metadata={},
-        namespace=conversation.namespace_id
-    )
+
+
+    document = await documents.create(conversation_id, filename=file.filename, content_type="application/pdf")
+    job = await jobs.create(conversation_id, source_type="document", source_ref=str(document.id))
+
+    try:
+        source_id, count = await ingestionService.ingest(
+            source_id=file.filename or f"{uuid.uuid4().hex}",
+            source_type=SourceType.DOCUMENT,
+            conversation_id=conversation_id,
+            raw_chunks=[c for c in result.content.get('blocks', [])],
+            shared_metadata={},
+            namespace=conversation.namespace_id
+        )
+    except Exception as exc:
+        await jobs.complete(job.id, IngestionJobStatus.FAILED, error=str(exc))
+        await documents.update_status(document.id, ArtifactStatus.FAILED, error=str(exc))
+        raise HTTPException(status.HTTP_502_BAD_GATEWAY, detail="Ingestion failed") from exc
+
+    await jobs.complete(job.id, IngestionJobStatus.SUCCEEDED)
+    await documents.update_status(document.id, ArtifactStatus.READY, page_count=None)
     return IngestionResponse(source_id=source_id, source_type=SourceType.DOCUMENT, ingested_count=count)
 
 
@@ -75,24 +91,45 @@ async def ingest_repository_chunks(
         chunkingService: RepositoryChunker,
         ingestionService: Ingestion,
         conversations: ConversationDep,
+        repositories: RepositoryArtifactDep,
+        jobs: IngestionJobDep,
         request: RepositoryIngestChunksRequest 
     ) -> IngestionResponse:
     conversation = await _get_conversation_or_404(conversations, conversation_id)
 
-    chunks = chunkingService.chunk_repository(request.repo_url, include_tests=request.include_tests)
+    try:
+        chunks = chunkingService.chunk_repository(request.repo_url, include_tests=request.include_tests)
+    except Exception as exc:
+        logger.exception("Repository chunking failed")
+        raise HTTPException(
+            status.HTTP_502_BAD_GATEWAY, detail="Repository chunking failed."
+        ) from exc
 
-    source_id, count = await ingestionService.ingest(
-        source_id= request.repo_url or f"{uuid.uuid4()}",
-        source_type=SourceType.REPOSITORY,
-        raw_chunks=[{
-            "chunk_id": chunk.id or f"{uuid.uuid4().hex}",
-            "text": chunk.content,
-            "metadata": {
-                k: (v or 'null') for k, v in chunk.model_dump().items() if k not in {'id', 'content'}
-            }
-        } for chunk in chunks if chunk.content.strip()],
-        namespace=conversation.namespace_id
-    )
+    # WIP: Handle multiple repo branches 
+    repository = await repositories.create(conversation_id, repo_url=request.repo_url, default_branch=None)
+    job = await jobs.create(conversation_id, source_type="repository", source_ref=str(repository.id))
+
+    try:
+        source_id, count = await ingestionService.ingest(
+                source_id= request.repo_url or f"{uuid.uuid4()}",
+                source_type=SourceType.REPOSITORY,
+                conversation_id=conversation_id,
+                raw_chunks=[{
+                    "chunk_id": chunk.id or f"{uuid.uuid4().hex}",
+                    "text": chunk.content,
+                    "metadata": {
+                        k: (v or 'null') for k, v in chunk.model_dump().items() if k not in {'id', 'content'}
+                    }
+                } for chunk in chunks if chunk.content.strip()],
+                namespace=conversation.namespace_id
+            )
+    except Exception as exc:
+        await jobs.complete(job.id, IngestionJobStatus.FAILED, error=str(exc))
+        await repositories.update_status(repository.id, ArtifactStatus.FAILED, error=str(exc))
+        raise HTTPException(status.HTTP_502_BAD_GATEWAY, detail="Ingestion failed") from exc
+    
+    await jobs.complete(job.id, IngestionJobStatus.SUCCEEDED)
+    await repositories.update_status(repository.id, ArtifactStatus.READY)
     return IngestionResponse(source_id=source_id, source_type=SourceType.REPOSITORY, ingested_count=count)
 
 
