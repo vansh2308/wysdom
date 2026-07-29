@@ -5,6 +5,7 @@ from functools import lru_cache
 from typing import Any
 
 from pinecone import Pinecone
+from langsmith import traceable
 
 from app.core.config import get_settings
 from app.knowledge.models import Chunk, ScoredChunk, SourceType
@@ -52,6 +53,7 @@ class PineconeVectorStore:
             for i in range(0, len(records), 100):  # upsert batch limit
                 await index.upsert(vectors=records[i : i + 100], namespace=namespace)
 
+    @traceable(name="dense_retrieval")
     async def query(
         self, vector: list[float], top_k: int, metadata_filter: dict[str, Any] | None, namespace: str
     ) -> list[ScoredChunk]:

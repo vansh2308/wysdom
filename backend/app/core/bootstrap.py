@@ -8,6 +8,7 @@ from app.auth.api import router as auth_router
 from app.api.health import router as health_router
 from app.core.config import Settings, get_settings
 from app.core.logging import configure_logging
+from app.evaluation.api import router as evaluation_router
 from app.infrastructure.database.session import get_engine, dispose_engine
 from app.repositories.api import router as repositories_router
 from app.documents.api import router as documents_router
@@ -17,6 +18,7 @@ from app.conversations.api import router as conversations_router
 from app.infrastructure.documents.model_registry import get_artifact_dict
 from app.infrastructure.vector.bm25_index import Bm25KeywordIndex
 from app.agents.checkpointer import init_checkpointer, close_checkpointer
+from app.infrastructure.observability.tracing import init_langsmith_tracing
 
 def create_app(settings: Settings | None = None) -> FastAPI:
     resolved_settings = settings or get_settings()
@@ -28,6 +30,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         logger.info("Application startup complete for %s", resolved_settings.app_name)
         
         try:
+            init_langsmith_tracing()
             get_engine()
             if resolved_settings.PDF_EXTRACTION_EAGER_LOAD_MODELS:
                 get_artifact_dict()
@@ -68,4 +71,5 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(knowledge_router)
     app.include_router(agents_router)
     app.include_router(conversations_router)
+    app.include_router(evaluation_router)
     return app

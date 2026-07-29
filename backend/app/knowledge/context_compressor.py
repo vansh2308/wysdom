@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from langsmith import traceable
 
 from app.core.config import get_settings
 from app.knowledge.models import ScoredChunk
@@ -17,6 +18,7 @@ context, no commentary."""
 
 
 class LlmContextCompressor:
+    @traceable(name="context_compression")
     async def compress(self, query: str, chunks: list[ScoredChunk]) -> str:
         if not chunks:
             return ""
@@ -28,17 +30,6 @@ class LlmContextCompressor:
             f"[chunk_{sc.chunk.chunk_id}] (score={sc.score:.3f})\n{sc.chunk.text}" for sc in chunks
         )
         try:
-            # response = await client.messages.create(
-            #     model=settings.CONTEXT_COMPRESSOR_MODEL,
-            #     max_tokens=2048,
-            #     system=_SYSTEM_PROMPT,
-            #     messages=[{
-            #         "role": "user", 
-            #         "content": f"Query: {query}\n\nRetrieved chunks:\n\n{formatted}"
-            #     }],
-            # )
-            # return "".join(b.text for b in response.content if b.type == "text")
-
             response = await client.chat.completions.create(
                 model = settings.CONTEXT_COMPRESSOR_MODEL,
                 messages = [

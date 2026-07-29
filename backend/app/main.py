@@ -7,11 +7,9 @@ app = create_app()
 
 
 # TODO: Migrate from openRouter to OpenAi
-# TODO: Add Postgres relations
 # TODO: Add conversation context 
-# TODO: Add websearch, arxiv tool
-# TODO: Add OAuth
-# TODO: Add repo/pdf graph builder 
+# TODO: Chunk repo .md as well
+# TODO: Add websearch, arxiv tool, graphBuilder
 
 if __name__ == "__main__":
     settings = get_settings()

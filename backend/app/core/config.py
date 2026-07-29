@@ -87,6 +87,19 @@ class Settings(BaseSettings):
     BM25_INDEX_PERSIST_PATH: Path = Path("/tmp/bm25_index.pkl")
 
 
+    # LANGSMITH_API_KEY: str | None = None
+    LANGSMITH_API_KEY: str = Field(..., description="LangSmith API Key")
+    
+    LANGSMITH_PROJECT: str = "wysdom"
+    LANGSMITH_TRACING_ENABLED: bool = True
+
+    GUARDRAIL_FAITHFULNESS_MODEL: str = "google/gemma-4-26b-a4b-it:free"
+    MAX_GUARDRAIL_RETRIES: int = 1
+
+    EVAL_RETRIEVAL_TOP_K: int = 10
+    EVAL_RETRIEVAL_K_VALUES: list[int] = [3, 5, 10]
+
+
     @property
     def is_development(self) -> bool:
         return self.environment.lower() == "development"

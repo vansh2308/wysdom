@@ -26,7 +26,8 @@ class AgentOrchestrationService:
             request_id=uuid.uuid4().hex,
             user_request=user_request,
             max_retrieval_loops=settings.AGENT_MAX_RETRIEVAL_LOOPS,
-            namespace=namespace
+            namespace=namespace,
+            max_guardrail_retries=settings.MAX_GUARDRAIL_RETRIES
         )
 
         try:

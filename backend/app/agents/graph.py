@@ -9,7 +9,7 @@ from openai import APIConnectionError, APITimeoutError, InternalServerError, Rat
 
 
 from app.agents.models import MultiAgentState
-from app.agents.nodes import critique_node, plan_node, retrieve_node, route_after_critique, synthesize_node
+from app.agents.nodes import critique_node, plan_node, retrieve_node, route_after_critique, synthesize_node, guardrail_node, route_after_guardrail
 from app.agents.checkpointer import get_checkpointer
 
 
@@ -41,15 +41,17 @@ def get_agent_graph():
         builder = StateGraph(MultiAgentState)
 
         builder.add_node("make_plan", plan_node, retry=_LLM_RETRY)
-        builder.add_node("retrieve", retrieve_node)  # failures handled internally, not node-level retried
+        builder.add_node("retrieve", retrieve_node)  
         builder.add_node("critique", critique_node, retry=_LLM_RETRY)
         builder.add_node("synthesize", synthesize_node, retry=_LLM_RETRY)
+        builder.add_node("guardrail", guardrail_node)
 
         builder.add_edge(START, "make_plan")
         builder.add_edge("make_plan", "retrieve")
         builder.add_edge("retrieve", "critique")
         builder.add_conditional_edges("critique", route_after_critique, {"retrieve": "retrieve", "synthesize": "synthesize"})
-        builder.add_edge("synthesize", END)
+        builder.add_edge("synthesize", "guardrail") 
+        builder.add_conditional_edges("guardrail", route_after_guardrail, {"synthesize": "synthesize", "end": END})
 
         _compiled_graph = builder.compile(checkpointer=get_checkpointer())
     return _compiled_graph

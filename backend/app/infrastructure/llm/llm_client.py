@@ -18,7 +18,11 @@ def get_anthropic_client() -> AsyncAnthropic:
 @lru_cache
 def get_openai_client() -> AsyncOpenAI:
     settings = get_settings()
-    return AsyncOpenAI(
+    client = AsyncOpenAI(
         base_url="https://openrouter.ai/api/v1",
         api_key=settings.OPENAI_API_KEY
     )
+    if settings.LANGSMITH_TRACING_ENABLED and settings.LANGSMITH_API_KEY:
+        from langsmith import wrappers
+        client = wrappers.wrap_openai(client)
+    return client

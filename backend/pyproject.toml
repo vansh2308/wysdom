@@ -32,6 +32,8 @@ mistralai = "^2.7.0"
 alembic = "^1.18.5"
 langgraph-checkpoint-postgres = "^2.0.0"
 psycopg = {extras = ["binary", "pool"], version = "^3.3.4"}
+langsmith = "^0.10.12"
+tiktoken = "^0.13.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.0"

@@ -8,6 +8,8 @@ from typing import Any, Literal
 from uuid import UUID
 from pydantic import BaseModel, Field
 
+
+from app.guardrails.models import GuardrailFinding
 from app.knowledge.models import SourceType
 
 
@@ -84,6 +86,9 @@ class MultiAgentState(BaseModel):
     errors: list[str] = Field(default_factory=list)
     report: ExplainabilityReport | None = None
     markdown_report: str | None = None
+    guardrail_findings: list[GuardrailFinding] = Field(default_factory=list)  
+    guardrail_retry_count: int = 0                                            
+    max_guardrail_retries: int = 1    
 
 
 
