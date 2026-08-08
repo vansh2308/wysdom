@@ -1,3 +1,3 @@
 [submodule "frontend"]
 	path = frontend
-	url = ./frontend
+	url = https://github.com/vansh2308/wysdom-frontend.git
